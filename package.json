@@ -1,6 +1,6 @@
 {
   "name": "svelte-dialog",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Vanilla JS dialog services and components made with Svelte.",
   "main": "build/index.cjs.js",
   "module": "build/index.js",
