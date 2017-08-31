@@ -530,10 +530,6 @@ function reinsertBetween(before, after, target) {
 	}
 }
 
-function createFragment() {
-	return document.createDocumentFragment();
-}
-
 function createElement(name) {
 	return document.createElement(name);
 }
@@ -685,7 +681,7 @@ var proto = {
 	_set: _set
 };
 
-var template$2 = (function () {
+var template$1 = (function () {
 const DEFAULTS = {
   opacity: 0.3,
   background: '#000'
@@ -703,18 +699,18 @@ return {
 }
 }());
 
-function encapsulateStyles$2 ( node ) {
+function encapsulateStyles$1 ( node ) {
 	setAttribute( node, 'svelte-4157681185', '' );
 }
 
-function add_css$2 () {
+function add_css$1 () {
 	var style = createElement( 'style' );
 	style.id = 'svelte-4157681185-style';
 	style.textContent = ".scrim[svelte-4157681185]{position:fixed;top:0;right:0;left:0;height:100vh;-webkit-tap-highlight-color:rgba(0, 0, 0, 0)}";
 	appendNode( style, document.head );
 }
 
-function create_main_fragment$2 ( state, component ) {
+function create_main_fragment$1 ( state, component ) {
 	var div, div_style_value;
 
 	return {
@@ -724,7 +720,7 @@ function create_main_fragment$2 ( state, component ) {
 		},
 
 		hydrate: function ( nodes ) {
-			encapsulateStyles$2( div );
+			encapsulateStyles$1( div );
 			div.className = "scrim";
 			div.style.cssText = div_style_value = "\n    opacity: " + ( state.opacity ) + ";\n    background: " + ( state.background ) + ";\n  ";
 		},
@@ -749,7 +745,7 @@ function create_main_fragment$2 ( state, component ) {
 
 function Scrim ( options ) {
 	this.options = options;
-	this._state = assign( template$2.data(), options.data );
+	this._state = assign( template$1.data(), options.data );
 
 	this._observers = {
 		pre: Object.create( null ),
@@ -762,9 +758,9 @@ function Scrim ( options ) {
 	this._yield = options._yield;
 	this._bind = options._bind;
 
-	if ( !document.getElementById( 'svelte-4157681185-style' ) ) add_css$2();
+	if ( !document.getElementById( 'svelte-4157681185-style' ) ) add_css$1();
 
-	this._fragment = create_main_fragment$2( this._state, this );
+	this._fragment = create_main_fragment$1( this._state, this );
 
 	if ( options.target ) {
 		this._fragment.create();
@@ -774,9 +770,9 @@ function Scrim ( options ) {
 
 assign( Scrim.prototype, proto );
 
-template$2.setup( Scrim );
+template$1.setup( Scrim );
 
-var template$1 = (function () {
+var template$1$1 = (function () {
 // TODO: write a smaller, less "featured" focusTrap
 const makeFocusTrap = ({ rootElement, initialFocusElement }) => {
   return focusTrap_1(rootElement, {
@@ -794,12 +790,8 @@ const STYLE = {
   modal:   { open: { opacity: 1 }, hidden: { opacity: 0 } },
   content: { open: { scale: 1 },   hidden: { scale: 0.9 } }
 };
-const STATES = {
-  open: 'open',
-  hidden: 'hidden'
-};
 const DEFAULTS = {
-  initialState: STATES.open,
+  initiallyHidden: false,
   initialFocusElement: false,
   center: false,
   zIndexBase: 1,
@@ -809,7 +801,7 @@ const DEFAULTS = {
   trapFocus: true
   //backButtonToDismiss: true, // TODO: implement this
 };
-const EVENTS = {
+const FIRES = {
   opening: 'opening',
   opened: 'opened',
 
@@ -820,14 +812,15 @@ const EVENTS = {
   hiding: 'hiding',
   hidden: 'hidden'
 };
-Object.freeze(DEFAULTS);
-Object.freeze(STATES);
-Object.freeze(EVENTS);
-Object.freeze(STYLE);
+const ONS = {
+  open: 'open',
+  dismiss: 'dismiss',
+  close: 'close'
+};[ STYLE, DEFAULTS, FIRES, ONS ].forEach(Object.freeze);
 
 return {
   setup (Modal) {
-    Object.assign(Modal, { DEFAULTS, STATES, EVENTS });
+    Object.assign(Modal, { DEFAULTS, FIRES, ONS });
   },
 
   data () {
@@ -856,22 +849,22 @@ return {
         });
         focusTrap.activate();
       });
-      this.on(EVENTS.hidden, () => focusTrap && focusTrap.deactivate());
+      this.on(FIRES.hidden, () => focusTrap && focusTrap.deactivate());
     }
 
-    /* This is so focus style can be applied to the default action element while
-         it is transitioning in.
-       it won't get its :focus style applied if it is focused before transition is done
-    */
     this.observe('initialFocusElementNeedsFocus', needsFocus => {
       if (needsFocus) {
         this.focusInitialFocusElement();
       }
     });
 
-    if (this.get('initialState') === STATES.open) {
+    if (!this.get('initiallyHidden')) {
       this.open();
     }
+
+    this.on(ONS.open, () => this.open());
+    this.on(ONS.dismiss, e => this.dismiss(e));
+    this.on(ONS.close, e => this.close(e));
   },
 
   methods: {
@@ -898,7 +891,7 @@ return {
       if (this.get('open') || this.get('opening')) { return }
 
       this.set({ opening: true, hiding: false, hidden: false });
-      this.fire(EVENTS.opening);
+      this.fire(FIRES.opening);
 
       Promise.all([
         this.tween(
@@ -914,7 +907,7 @@ return {
       ])
         .then(() => {
           this.set({ opening: false });
-          this.fire(EVENTS.opened);
+          this.fire(FIRES.opened);
         });
 
       return this
@@ -925,9 +918,9 @@ return {
 
       this.set({ opening: false, hiding: true });
 
-      this.fire(EVENTS.result, result);
+      this.fire(FIRES.result, result);
       this.fire(reason, result);
-      this.fire(EVENTS.hiding);
+      this.fire(FIRES.hiding);
 
       Promise.all([
         this.tween(
@@ -943,35 +936,35 @@ return {
       ])
         .then(() => {
           this.set({ hiding: false, hidden: true });
-          this.fire(EVENTS.hidden);
+          this.fire(FIRES.hidden);
         });
 
       return this
     },
 
     close (result) {
-      return this.hide(EVENTS.closed, result)
+      return this.hide(FIRES.closed, result)
     },
 
     dismiss (result) {
-      return this.hide(EVENTS.dismissed, result)
+      return this.hide(FIRES.dismissed, result)
     }
   }
 }
 }());
 
-function encapsulateStyles$1 ( node ) {
-	setAttribute( node, 'svelte-2894883851', '' );
+function encapsulateStyles$1$1 ( node ) {
+	setAttribute( node, 'svelte-4112083598', '' );
 }
 
-function add_css$1 () {
+function add_css$1$1 () {
 	var style = createElement( 'style' );
-	style.id = 'svelte-2894883851-style';
-	style.textContent = ".svelte-modal[svelte-2894883851]{position:fixed;top:0;left:0;right:0;height:100%;display:flex;align-items:flex-start;justify-content:center}[data-center=\"true\"][svelte-2894883851]{align-items:center}[data-hidden=\"true\"][svelte-2894883851]{visibility:hidden}.content[svelte-2894883851]{max-width:100vw;max-height:100vh;overflow:visible;z-index:1}";
+	style.id = 'svelte-4112083598-style';
+	style.textContent = ".svelte-modal[svelte-4112083598]{position:fixed;top:0;left:0;right:0;height:100%;display:flex;align-items:flex-start;justify-content:center}[data-center=\"true\"][svelte-4112083598]{align-items:center}[data-hidden=\"true\"][svelte-4112083598]{visibility:hidden}.content[svelte-4112083598]{max-width:100vw;max-height:100vh;overflow:visible;z-index:1}";
 	appendNode( style, document.head );
 }
 
-function create_main_fragment$1 ( state, component ) {
+function create_main_fragment$1$1 ( state, component ) {
 	var text, div, div_style_value, div_1, div_1_style_value, slot_content_default = component._slotted.default, slot_content_default_before, slot_content_default_after, text_2, div_2, slot_content_scrim = component._slotted.scrim, slot_content_scrim_before, slot_content_scrim_after;
 
 	function onwindowkeyup ( event ) {
@@ -1002,13 +995,13 @@ function create_main_fragment$1 ( state, component ) {
 		},
 
 		hydrate: function ( nodes ) {
-			encapsulateStyles$1( div );
+			encapsulateStyles$1$1( div );
 			div.className = "svelte-modal";
 			div.tabIndex = "-1";
 			setAttribute( div, 'data-center', state.center );
 			setAttribute( div, 'data-hidden', state.hidden );
 			div.style.cssText = div_style_value = "z-index: " + ( state.zIndexBase ) + "; opacity: " + ( state.modalStyle.opacity ) + ";";
-			encapsulateStyles$1( div_1 );
+			encapsulateStyles$1$1( div_1 );
 			div_1.className = "content";
 			div_1.style.cssText = div_1_style_value = "transform: scale(" + ( state.contentStyle.scale ) + ");";
 			addListener( div_2, 'click', click_handler );
@@ -1091,7 +1084,7 @@ function create_main_fragment$1 ( state, component ) {
 function Modal ( options ) {
 	this.options = options;
 	this.refs = {};
-	this._state = assign( template$1.data(), options.data );
+	this._state = assign( template$1$1.data(), options.data );
 	this._recompute( {}, this._state, {}, true );
 
 	this._observers = {
@@ -1106,9 +1099,9 @@ function Modal ( options ) {
 	this._bind = options._bind;
 	this._slotted = options.slots || {};
 
-	if ( !document.getElementById( 'svelte-2894883851-style' ) ) add_css$1();
+	if ( !document.getElementById( 'svelte-4112083598-style' ) ) add_css$1$1();
 
-	var oncreate = template$1.oncreate.bind( this );
+	var oncreate = template$1$1.oncreate.bind( this );
 
 	if ( !options._root ) {
 		this._oncreate = [oncreate];
@@ -1120,7 +1113,7 @@ function Modal ( options ) {
 
 	this.slots = {};
 
-	this._fragment = create_main_fragment$1( this._state, this );
+	this._fragment = create_main_fragment$1$1( this._state, this );
 
 	if ( options.target ) {
 		this._fragment.create();
@@ -1136,23 +1129,23 @@ function Modal ( options ) {
 	}
 }
 
-assign( Modal.prototype, template$1.methods, proto );
+assign( Modal.prototype, template$1$1.methods, proto );
 
 Modal.prototype._recompute = function _recompute ( changed, state, oldState, isInitial ) {
 	if ( isInitial || changed.hiding || changed.opening ) {
-		if ( differs( ( state.transitioning = template$1.computed.transitioning( state.hiding, state.opening ) ), oldState.transitioning ) ) changed.transitioning = true;
+		if ( differs( ( state.transitioning = template$1$1.computed.transitioning( state.hiding, state.opening ) ), oldState.transitioning ) ) changed.transitioning = true;
 	}
 
 	if ( isInitial || changed.hidden || changed.transitioning ) {
-		if ( differs( ( state.open = template$1.computed.open( state.hidden, state.transitioning ) ), oldState.open ) ) changed.open = true;
+		if ( differs( ( state.open = template$1$1.computed.open( state.hidden, state.transitioning ) ), oldState.open ) ) changed.open = true;
 	}
 
 	if ( isInitial || changed.initialFocusElement || changed.opening ) {
-		if ( differs( ( state.initialFocusElementNeedsFocus = template$1.computed.initialFocusElementNeedsFocus( state.initialFocusElement, state.opening ) ), oldState.initialFocusElementNeedsFocus ) ) changed.initialFocusElementNeedsFocus = true;
+		if ( differs( ( state.initialFocusElementNeedsFocus = template$1$1.computed.initialFocusElementNeedsFocus( state.initialFocusElement, state.opening ) ), oldState.initialFocusElementNeedsFocus ) ) changed.initialFocusElementNeedsFocus = true;
 	}
 };
 
-template$1.setup( Modal );
+template$1$1.setup( Modal );
 
 const toArray = v => Array.isArray(v) ? v : Object.keys(v);
 const makeCancelAll = listeners =>
@@ -1170,6 +1163,188 @@ const forwardEvents = (from, to, eventNames) => {
   return { cancel: makeCancelAll(listeners)  }
 };
 
+const addMethodsFrom = (from, to, methodNames) => {
+  toArray(methodNames).forEach(
+    methodName => to[methodName] = (...args) => from[methodName](...args)
+  );
+};
+
+function noop$1() {}
+
+function assign$1(target) {
+	var k,
+		source,
+		i = 1,
+		len = arguments.length;
+	for (; i < len; i++) {
+		source = arguments[i];
+		for (k in source) target[k] = source[k];
+	}
+
+	return target;
+}
+
+function appendNode$1(node, target) {
+	target.appendChild(node);
+}
+
+function detachNode$1(node) {
+	node.parentNode.removeChild(node);
+}
+
+function reinsertBetween$1(before, after, target) {
+	while (before.nextSibling && before.nextSibling !== after) {
+		target.appendChild(before.parentNode.removeChild(before.nextSibling));
+	}
+}
+
+function createFragment() {
+	return document.createDocumentFragment();
+}
+
+function createElement$1(name) {
+	return document.createElement(name);
+}
+
+function createText$1(data) {
+	return document.createTextNode(data);
+}
+
+function createComment$1() {
+	return document.createComment('');
+}
+
+function setAttribute$1(node, attribute, value) {
+	node.setAttribute(attribute, value);
+}
+
+function destroy$1(detach) {
+	this.destroy = this.set = this.get = noop$1;
+	this.fire('destroy');
+
+	if (detach !== false) this._fragment.unmount();
+	this._fragment.destroy();
+	this._fragment = this._state = null;
+}
+
+function differs$1(a, b) {
+	return a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
+
+function dispatchObservers$1(component, group, changed, newState, oldState) {
+	for (var key in group) {
+		if (!changed[key]) continue;
+
+		var newValue = newState[key];
+		var oldValue = oldState[key];
+
+		var callbacks = group[key];
+		if (!callbacks) continue;
+
+		for (var i = 0; i < callbacks.length; i += 1) {
+			var callback = callbacks[i];
+			if (callback.__calling) continue;
+
+			callback.__calling = true;
+			callback.call(component, newValue, oldValue);
+			callback.__calling = false;
+		}
+	}
+}
+
+function get$1(key) {
+	return key ? this._state[key] : this._state;
+}
+
+function fire$1(eventName, data) {
+	var handlers =
+		eventName in this._handlers && this._handlers[eventName].slice();
+	if (!handlers) return;
+
+	for (var i = 0; i < handlers.length; i += 1) {
+		handlers[i].call(this, data);
+	}
+}
+
+function observe$1(key, callback, options) {
+	var group = options && options.defer
+		? this._observers.post
+		: this._observers.pre;
+
+	(group[key] || (group[key] = [])).push(callback);
+
+	if (!options || options.init !== false) {
+		callback.__calling = true;
+		callback.call(this, this._state[key]);
+		callback.__calling = false;
+	}
+
+	return {
+		cancel: function() {
+			var index = group[key].indexOf(callback);
+			if (~index) group[key].splice(index, 1);
+		}
+	};
+}
+
+function on$1(eventName, handler) {
+	if (eventName === 'teardown') return this.on('destroy', handler);
+
+	var handlers = this._handlers[eventName] || (this._handlers[eventName] = []);
+	handlers.push(handler);
+
+	return {
+		cancel: function() {
+			var index = handlers.indexOf(handler);
+			if (~index) handlers.splice(index, 1);
+		}
+	};
+}
+
+function set$1(newState) {
+	this._set(assign$1({}, newState));
+	if (this._root._lock) return;
+	this._root._lock = true;
+	callAll$1(this._root._beforecreate);
+	callAll$1(this._root._oncreate);
+	callAll$1(this._root._aftercreate);
+	this._root._lock = false;
+}
+
+function _set$1(newState) {
+	var oldState = this._state,
+		changed = {},
+		dirty = false;
+
+	for (var key in newState) {
+		if (differs$1(newState[key], oldState[key])) changed[key] = dirty = true;
+	}
+	if (!dirty) return;
+
+	this._state = assign$1({}, oldState, newState);
+	this._recompute(changed, this._state, oldState, false);
+	if (this._bind) this._bind(changed, this._state);
+	dispatchObservers$1(this, this._observers.pre, changed, this._state, oldState);
+	this._fragment.update(changed, this._state);
+	dispatchObservers$1(this, this._observers.post, changed, this._state, oldState);
+}
+
+function callAll$1(fns) {
+	while (fns && fns.length) fns.pop()();
+}
+
+var proto$1 = {
+	destroy: destroy$1,
+	get: get$1,
+	fire: fire$1,
+	observe: observe$1,
+	on: on$1,
+	set: set$1,
+	teardown: destroy$1,
+	_recompute: noop$1,
+	_set: _set$1
+};
+
 var template = (function () {
 let id = -1;
 
@@ -1183,11 +1358,15 @@ const DEFAULTS = Object.assign({}, Modal.DEFAULTS, {
     description: `svelte-dialog-description-${id}`
   }
 });
-const EVENTS = Modal.EVENTS;
+const FIRES = Object.assign({}, Modal.FIRES, {
+  dismiss: 'dismiss',
+  close: 'close'
+});
+const ONS = Modal.ONS;[ DEFAULTS, FIRES ].forEach(Object.freeze);
 
 return {
   setup (Dialog) {
-    Object.assign(Dialog, { DEFAULTS, EVENTS });
+    Object.assign(Dialog, { DEFAULTS, FIRES, ONS });
   },
 
   data () {
@@ -1198,20 +1377,21 @@ return {
 
   oncreate () {
     forwardData(this, this.refs.modal, Modal.DEFAULTS);
-    forwardEvents(this.refs.modal, this, Modal.EVENTS);
+    forwardEvents(this.refs.modal, this, Modal.FIRES);
+    addMethodsFrom(this.refs.modal, this, [ 'open', 'dismiss', 'close' ]);
   }
 }
 }());
 
 function encapsulateStyles ( node ) {
-	setAttribute( node, 'svelte-1943038861', '' );
+	setAttribute$1( node, 'svelte-3997845366', '' );
 }
 
 function add_css () {
-	var style = createElement( 'style' );
-	style.id = 'svelte-1943038861-style';
-	style.textContent = ".svelte-dialog[svelte-1943038861]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87)}.svelte-dialog[svelte-1943038861]:focus{outline:0}.dialog-container[svelte-1943038861]{min-width:275px;max-width:440px}@media(min-width: 768px){.dialog-container[svelte-1943038861]{min-width:360px;max-width:600px}}.dialog-main[svelte-1943038861]{padding:24px}.dialog-heading[svelte-1943038861]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-1943038861]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-1943038861]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
-	appendNode( style, document.head );
+	var style = createElement$1( 'style' );
+	style.id = 'svelte-3997845366-style';
+	style.textContent = ".svelte-dialog[svelte-3997845366]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87)}.svelte-dialog[svelte-3997845366]:focus{outline:0}.dialog-container[svelte-3997845366]{min-width:275px;max-width:440px}@media(min-width: 768px){.dialog-container[svelte-3997845366]{min-width:360px;max-width:600px}}.dialog-main[svelte-3997845366]{padding:24px}.dialog-heading[svelte-3997845366]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-3997845366]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-3997845366]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
+	appendNode$1( style, document.head );
 }
 
 function create_main_fragment ( state, component ) {
@@ -1226,16 +1406,16 @@ function create_main_fragment ( state, component ) {
 
 	return {
 		create: function () {
-			div = createElement( 'div' );
-			div_1 = createElement( 'div' );
-			section = createElement( 'section' );
-			h1 = createElement( 'h1' );
-			text = createText( state.heading );
-			text_1 = createText( "\n\n        " );
-			p = createElement( 'p' );
-			text_2 = createText( text_2_value );
-			text_4 = createText( "\n\n      " );
-			div_2 = createElement( 'div' );
+			div = createElement$1( 'div' );
+			div_1 = createElement$1( 'div' );
+			section = createElement$1( 'section' );
+			h1 = createElement$1( 'h1' );
+			text = createText$1( state.heading );
+			text_1 = createText$1( "\n\n        " );
+			p = createElement$1( 'p' );
+			text_2 = createText$1( text_2_value );
+			text_4 = createText$1( "\n\n      " );
+			div_2 = createElement$1( 'div' );
 			modal._fragment.create();
 			this.hydrate();
 		},
@@ -1243,9 +1423,9 @@ function create_main_fragment ( state, component ) {
 		hydrate: function ( nodes ) {
 			encapsulateStyles( div );
 			div.className = "svelte-dialog";
-			setAttribute( div, 'role', "alertdialog" );
-			setAttribute( div, 'aria-labelledby', div_aria_labelledby_value = state.ids.heading );
-			setAttribute( div, 'aria-describedby', div_aria_describedby_value = state.ids.description );
+			setAttribute$1( div, 'role', "alertdialog" );
+			setAttribute$1( div, 'aria-labelledby', div_aria_labelledby_value = state.ids.heading );
+			setAttribute$1( div, 'aria-describedby', div_aria_describedby_value = state.ids.description );
 			encapsulateStyles( div_1 );
 			div_1.className = "dialog-container";
 			encapsulateStyles( section );
@@ -1261,22 +1441,22 @@ function create_main_fragment ( state, component ) {
 		},
 
 		mount: function ( target, anchor ) {
-			appendNode( div, modal._slotted.default );
+			appendNode$1( div, modal._slotted.default );
 			component.refs.dialog = div;
-			appendNode( div_1, div );
-			appendNode( section, div_1 );
-			appendNode( h1, section );
-			appendNode( text, h1 );
-			appendNode( text_1, section );
-			appendNode( p, section );
-			appendNode( text_2, p );
-			appendNode( text_4, div_1 );
-			appendNode( div_2, div_1 );
+			appendNode$1( div_1, div );
+			appendNode$1( section, div_1 );
+			appendNode$1( h1, section );
+			appendNode$1( text, h1 );
+			appendNode$1( text_1, section );
+			appendNode$1( p, section );
+			appendNode$1( text_2, p );
+			appendNode$1( text_4, div_1 );
+			appendNode$1( div_2, div_1 );
 
 			if (slot_content_actions) {
-				appendNode(slot_content_actions_before || (slot_content_actions_before = createComment()), div_2);
-				appendNode(slot_content_actions, div_2);
-				appendNode(slot_content_actions_after || (slot_content_actions_after = createComment()), div_2);
+				appendNode$1(slot_content_actions_before || (slot_content_actions_before = createComment$1()), div_2);
+				appendNode$1(slot_content_actions, div_2);
+				appendNode$1(slot_content_actions_after || (slot_content_actions_after = createComment$1()), div_2);
 			}
 
 			modal._fragment.mount( target, anchor );
@@ -1284,11 +1464,11 @@ function create_main_fragment ( state, component ) {
 
 		update: function ( changed, state ) {
 			if ( ( changed.ids ) && div_aria_labelledby_value !== ( div_aria_labelledby_value = state.ids.heading ) ) {
-				setAttribute( div, 'aria-labelledby', div_aria_labelledby_value );
+				setAttribute$1( div, 'aria-labelledby', div_aria_labelledby_value );
 			}
 
 			if ( ( changed.ids ) && div_aria_describedby_value !== ( div_aria_describedby_value = state.ids.description ) ) {
-				setAttribute( div, 'aria-describedby', div_aria_describedby_value );
+				setAttribute$1( div, 'aria-describedby', div_aria_describedby_value );
 			}
 
 			if ( ( changed.ids ) && h1_id_value !== ( h1_id_value = state.ids.heading ) ) {
@@ -1310,9 +1490,9 @@ function create_main_fragment ( state, component ) {
 
 		unmount: function () {
 			if (slot_content_actions) {
-				reinsertBetween(slot_content_actions_before, slot_content_actions_after, slot_content_actions);
-				detachNode(slot_content_actions_before);
-				detachNode(slot_content_actions_after);
+				reinsertBetween$1(slot_content_actions_before, slot_content_actions_after, slot_content_actions);
+				detachNode$1(slot_content_actions_before);
+				detachNode$1(slot_content_actions_after);
 			}
 
 			modal._fragment.unmount();
@@ -1329,7 +1509,7 @@ function create_main_fragment ( state, component ) {
 function Dialog ( options ) {
 	this.options = options;
 	this.refs = {};
-	this._state = assign( template.data(), options.data );
+	this._state = assign$1( template.data(), options.data );
 
 	this._observers = {
 		pre: Object.create( null ),
@@ -1343,7 +1523,7 @@ function Dialog ( options ) {
 	this._bind = options._bind;
 	this._slotted = options.slots || {};
 
-	if ( !document.getElementById( 'svelte-1943038861-style' ) ) add_css();
+	if ( !document.getElementById( 'svelte-3997845366-style' ) ) add_css();
 
 	var oncreate = template.oncreate.bind( this );
 
@@ -1366,14 +1546,14 @@ function Dialog ( options ) {
 
 	if ( !options._root ) {
 		this._lock = true;
-		callAll(this._beforecreate);
-		callAll(this._oncreate);
-		callAll(this._aftercreate);
+		callAll$1(this._beforecreate);
+		callAll$1(this._oncreate);
+		callAll$1(this._aftercreate);
 		this._lock = false;
 	}
 }
 
-assign( Dialog.prototype, proto );
+assign$1( Dialog.prototype, proto$1 );
 
 template.setup( Dialog );
 
