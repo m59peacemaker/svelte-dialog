@@ -14,7 +14,7 @@ export default [
   {
     input: 'src/Dialog.html',
     output: {
-      file: 'build/Dialog.js',
+      file: 'build/index.js',
       format: 'es'
     },
     plugins: Plugins()
@@ -23,7 +23,7 @@ export default [
   {
     input: 'src/Dialog.html',
     output: {
-      file: 'build/Dialog.cjs.js',
+      file: 'build/index.cjs.js',
       format: 'cjs'
     },
     plugins: Plugins()
