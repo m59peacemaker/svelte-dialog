@@ -1,0 +1,41 @@
+<Dialog ref:dialog>
+  <div slot="actions">
+    <button
+      ref:ok
+      class="dialog-action ok"
+      on:click="refs.dialog.refs.modal.close()"
+      on:mouseenter="this.focus()"
+      on:mouseleave="this.blur()"
+    >{{ okText }}</button>
+  </div>
+</Dialog>
+
+<script>
+import Dialog from './Dialog.html'
+import { forwardData, forwardEvents } from './lib/svelte-utils'
+
+const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
+  initialFocus: false
+})
+Object.freeze(DEFAULTS)
+
+export default {
+  setup (Alert) {
+    Object.assign(Alert, { DEFAULTS })
+  },
+
+  components: { Dialog },
+
+  data () {
+    return Object.assign({}, DEFAULTS)
+  },
+
+  oncreate () {
+    forwardData(this, this.refs.dialog, Dialog.DEFAULTS)
+    forwardEvents(this.refs.dialog, this, Dialog.EVENTS)
+
+    console.log(this.get('initialFocus'))
+    this.set({ initialFocusElement: this.get('initialFocus') ? this.refs.ok : false })
+  },
+}
+</script>

@@ -1,0 +1,115 @@
+<div class="container-fluid">
+  <fieldset class="dialog-type-options">
+    <legend>Dialog type</legend>
+    <ul>
+      <li>
+        <label>
+          <input type="radio" name="dialog-type" value="alert" bind:group="dialogType"/>
+          alert
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="radio" name="dialog-type" value="confirm" bind:group="dialogType"/>
+          confirm
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="radio" name="dialog-type" value="prompt" bind:group="dialogType"/>
+          prompt
+        </label>
+      </li>
+    </ul>
+  </fieldset>
+
+  {{#if dialogType === 'alert'}}
+    <div>
+      <label>
+        initial focus
+        <input type="checkbox" name="initial-focus" bind:checked="dialogOptions.alert.initialFocus"/>
+      </label>
+    </div>
+  {{/if}}
+
+  {{#if dialogType === 'confirm'}}
+    <fieldset class="dialog-default-action">
+      <legend>Default action</legend>
+      <ul>
+        <li>
+          <label>
+            <input type="radio" name="default-action" value="confirm" bind:group="dialogOptions.confirm.defaultAction"/>
+            confirm
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="default-action" value="deny" bind:group="dialogOptions.confirm.defaultAction"/>
+            deny
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="default-action" value="{{ false }}" bind:group="dialogOptions.confirm.defaultAction"/>
+            none
+          </label>
+        </li>
+      </ul>
+    </fieldset>
+
+    <p><strong>Confirmed: </strong> {{ confirmed || false }}</p>
+  {{/if}}
+
+  <button on:click="set({ dialogOpen: true })">Open Dialog</button>
+</div>
+
+{{#if dialogOpen}}
+
+  {{#if dialogType === 'alert'}}
+    <Alert
+      on:hidden="set({ dialogOpen: false })"
+      heading="I would love it if you noticed"
+      description="&sung; I'm not going home &sung;"
+      okText="Great. Good. Fine. Ok."
+      initialFocus="{{ dialogOptions.alert.initialFocus }}"
+    />
+  {{/if}}
+
+  {{#if dialogType === 'confirm'}}
+    <Confirm
+      on:result="set({ confirmed: event && event.confirmed })"
+      on:hidden="set({ dialogOpen: false })"
+      heading="Do you want a JavaScript dialog?"
+      description="npm install svelte-dialog"
+      denyText="I really just don't"
+      confirmText="Sure, Whatever"
+      defaultAction="{{ dialogOptions.confirm.defaultAction }}"
+    />
+  {{/if}}
+
+{{/if}}
+
+<script>
+import Dialog from '../../src/Dialog.html'
+import Confirm from '../../src/Confirm.html'
+import Alert from '../../src/Alert.html'
+
+export default {
+  data () {
+    return {
+      dialogOpen: false,
+      dialogType: 'confirm',
+      dialogOptions: {
+        alert: {
+          initialFocus: true
+        },
+        confirm: {
+          defaultAction: Confirm.ACTIONS.confirm
+        }
+      }
+    }
+  },
+
+  components: { Dialog, Confirm, Alert }
+}
+</script>

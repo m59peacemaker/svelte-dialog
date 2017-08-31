@@ -1,0 +1,53 @@
+<Dialog ref:dialog>
+  <div slot="actions">
+    <button
+      ref:deny
+      class="dialog-action deny"
+      on:click="refs.dialog.refs.modal.dismiss({ confirmed: false })"
+      on:mouseenter="this.focus()"
+      on:mouseleave="this.blur()"
+    >{{ denyText }}</button>
+    <button
+      ref:confirm
+      class="dialog-action confirm"
+      on:click="refs.dialog.refs.modal.close({ confirmed: true })"
+      on:mouseenter="this.focus()"
+      on:mouseleave="this.blur()"
+    >{{ confirmText }}</button>
+  </div>
+</Dialog>
+
+<script>
+import Dialog from './Dialog.html'
+import { forwardData, forwardEvents } from './lib/svelte-utils'
+
+const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
+  heading: 'Are you sure?',
+  description: 'Confirm if you wish to proceed.',
+  denyText: 'Cancel',
+  confirmText: 'Confirm',
+  defaultAction: false
+})
+const ACTIONS = { confirm: 'confirm', deny: 'deny' }
+Object.freeze(DEFAULTS)
+Object.freeze(ACTIONS)
+
+export default {
+  setup (Confirm) {
+    Object.assign(Confirm, { DEFAULTS, ACTIONS })
+  },
+
+  components: { Dialog },
+
+  data () {
+    return Object.assign({}, DEFAULTS)
+  },
+
+  oncreate () {
+    forwardData(this, this.refs.dialog, Dialog.DEFAULTS)
+    forwardEvents(this.refs.dialog, this, Dialog.EVENTS)
+
+    this.set({ initialFocusElement: this.refs[this.get('defaultAction')] })
+  }
+}
+</script>

@@ -1,0 +1,139 @@
+<Modal ref:modal>
+  <div
+    ref:dialog
+    class="svelte-dialog"
+    role="alertdialog"
+    aria-labelledby="{{ ids.heading }}"
+    aria-describedby="{{ ids.description }}"
+  >
+    <div class="dialog-container"> <!-- this element is here for the sake of restricting width -->
+
+      <section class="dialog-main">
+        <h1
+          id="{{ ids.heading }}"
+          class="dialog-heading"
+        >{{ heading }}</h1>
+
+        <p
+          id="{{ ids.description }}"
+          class="dialog-description"
+        >{{ description || '' }}</p>
+      </section>
+
+      <div class="dialog-actions">
+        <slot ref:actions name="actions"></slot>
+      </div>
+
+    </div>
+  </div>
+</Modal>
+
+<script>
+import Modal from 'svelte-modal'
+import { forwardData, forwardEvents } from './lib/svelte-utils'
+
+let id = -1
+
+const DEFAULTS = Object.assign({}, Modal.DEFAULTS, {
+  center: true,
+  heading: `${location.host} says...`,
+  description: 'Press "OK" to continue.',
+  okText: 'OK',
+  ids: {
+    heading: `svelte-dialog-heading-${id}`,
+    description: `svelte-dialog-description-${id}`
+  }
+})
+const EVENTS = Modal.EVENTS
+
+export default {
+  setup (Dialog) {
+    Object.assign(Dialog, { DEFAULTS, EVENTS })
+  },
+
+  components: { Modal },
+
+  data () {
+    ++id
+
+    return Object.assign({}, DEFAULTS)
+  },
+
+  oncreate () {
+    forwardData(this, this.refs.modal, Modal.DEFAULTS)
+    forwardEvents(this.refs.modal, this, Modal.EVENTS)
+  }
+}
+</script>
+
+<style>
+.svelte-dialog {
+  max-width: calc(100vw - 20px);
+  background-color: white;
+  box-shadow: 0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);
+  border-radius: 4px;
+  color: rgba(0,0,0,0.87);
+}
+
+.svelte-dialog:focus { /* when defaultAction is false, this gets initial focus */
+  outline: 0;
+}
+
+.dialog-container {
+  min-width: 275px;
+  max-width: 440px;
+}
+
+@media (min-width: 768px) {
+  .dialog-container {
+    min-width: 360px;
+    max-width: 600px;
+  }
+}
+
+.dialog-main {
+  padding: 24px;
+}
+
+.dialog-heading {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 10px 0;
+}
+
+.dialog-description {
+  margin: 12px 0 24px 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 24px 0 48px;
+}
+
+:global(.dialog-action) {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(16,108,200);
+  text-transform: uppercase;
+  border: 0;
+  background: none;
+  padding: 10px;
+  margin: 8px 0 8px 8px;
+  box-sizing: border-box;
+  min-width: 93px;
+  cursor: pointer;
+  transition: background-color 400ms cubic-bezier(.25, .8, .25, 1);
+}
+
+:global(.dialog-action:focus) {
+  outline: none;
+}
+
+:global(.dialog-action:focus), :global(.dialog-action.emphasized) {
+  background-color: rgba(158,158,158,0.2);
+}
+</style>
