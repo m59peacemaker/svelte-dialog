@@ -3,14 +3,14 @@
     <button
       ref:deny
       class="dialog-action deny"
-      on:click="refs.dialog.refs.modal.dismiss({ confirmed: false })"
+      on:click="deny()"
       on:mouseenter="this.focus()"
       on:mouseleave="this.blur()"
     >{{ denyText }}</button>
     <button
       ref:confirm
       class="dialog-action confirm"
-      on:click="refs.dialog.refs.modal.close({ confirmed: true })"
+      on:click="confirm()"
       on:mouseenter="this.focus()"
       on:mouseleave="this.blur()"
     >{{ confirmText }}</button>
@@ -29,8 +29,8 @@ const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
   defaultAction: false
 })
 const ACTIONS = { confirm: 'confirm', deny: 'deny' }
-Object.freeze(DEFAULTS)
-Object.freeze(ACTIONS)
+const FIRES = Dialog.FIRES
+;[ DEFAULTS, ACTIONS ].forEach(Object.freeze)
 
 export default {
   setup (Confirm) {
@@ -45,9 +45,21 @@ export default {
 
   oncreate () {
     forwardData(this, this.refs.dialog, Dialog.DEFAULTS)
-    forwardEvents(this.refs.dialog, this, Dialog.EVENTS)
+    forwardEvents(this.refs.dialog, this, Dialog.FIRES)
 
     this.set({ initialFocusElement: this.refs[this.get('defaultAction')] })
+  },
+
+  methods: {
+    open () {
+      this.refs.dialog.open()
+    },
+    deny () {
+      this.refs.dialog.dismiss({ confirmed: false })
+    },
+    confirm () {
+      this.refs.dialog.close({ confirmed: true })
+    }
   }
 }
 </script>

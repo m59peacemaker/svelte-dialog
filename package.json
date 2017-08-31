@@ -2,9 +2,9 @@
   "name": "svelte-dialog",
   "version": "0.0.0",
   "description": "Vanilla JS dialog services and components made with Svelte.",
-  "main": "build/Dialog.cjs.js",
-  "module": "build/Dialog.js",
-  "svelte": "src/Dialog.html",
+  "main": "build/index.cjs.js",
+  "module": "build/index.js",
+  "svelte": "src/index.js",
   "svelte.root": "src",
   "scripts": {
     "build-main": "rollup -c",
@@ -39,7 +39,7 @@
   "license": "CC0-1.0",
   "dependencies": {
     "focus-trap": "^2.3.0",
-    "svelte-modal": "0.0.1"
+    "svelte-modal": "^0.1.0"
   },
   "devDependencies": {
     "live-server": "^1.2.0",

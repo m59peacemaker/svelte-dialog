@@ -30,7 +30,7 @@
 
 <script>
 import Modal from 'svelte-modal'
-import { forwardData, forwardEvents } from './lib/svelte-utils'
+import { forwardData, forwardEvents, addMethodsFrom } from './lib/svelte-utils'
 
 let id = -1
 
@@ -44,11 +44,16 @@ const DEFAULTS = Object.assign({}, Modal.DEFAULTS, {
     description: `svelte-dialog-description-${id}`
   }
 })
-const EVENTS = Modal.EVENTS
+const FIRES = Object.assign({}, Modal.FIRES, {
+  dismiss: 'dismiss',
+  close: 'close'
+})
+const ONS = Modal.ONS
+;[ DEFAULTS, FIRES ].forEach(Object.freeze)
 
 export default {
   setup (Dialog) {
-    Object.assign(Dialog, { DEFAULTS, EVENTS })
+    Object.assign(Dialog, { DEFAULTS, FIRES, ONS })
   },
 
   components: { Modal },
@@ -61,7 +66,8 @@ export default {
 
   oncreate () {
     forwardData(this, this.refs.modal, Modal.DEFAULTS)
-    forwardEvents(this.refs.modal, this, Modal.EVENTS)
+    forwardEvents(this.refs.modal, this, Modal.FIRES)
+    addMethodsFrom(this.refs.modal, this, [ 'open', 'dismiss', 'close' ])
   }
 }
 </script>

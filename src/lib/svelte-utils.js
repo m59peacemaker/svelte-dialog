@@ -14,7 +14,14 @@ const forwardEvents = (from, to, eventNames) => {
   return { cancel: makeCancelAll(listeners)  }
 }
 
+const addMethodsFrom = (from, to, methodNames) => {
+  toArray(methodNames).forEach(
+    methodName => to[methodName] = (...args) => from[methodName](...args)
+  )
+}
+
 export {
   forwardData,
-  forwardEvents
+  forwardEvents,
+  addMethodsFrom
 }

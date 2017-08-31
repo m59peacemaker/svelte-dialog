@@ -3,7 +3,7 @@
     <button
       ref:ok
       class="dialog-action ok"
-      on:click="refs.dialog.refs.modal.close()"
+      on:click="close()"
       on:mouseenter="this.focus()"
       on:mouseleave="this.blur()"
     >{{ okText }}</button>
@@ -17,11 +17,12 @@ import { forwardData, forwardEvents } from './lib/svelte-utils'
 const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
   initialFocus: false
 })
+const FIRES = Dialog.FIRES
 Object.freeze(DEFAULTS)
 
 export default {
   setup (Alert) {
-    Object.assign(Alert, { DEFAULTS })
+    Object.assign(Alert, { DEFAULTS, FIRES })
   },
 
   components: { Dialog },
@@ -32,10 +33,18 @@ export default {
 
   oncreate () {
     forwardData(this, this.refs.dialog, Dialog.DEFAULTS)
-    forwardEvents(this.refs.dialog, this, Dialog.EVENTS)
+    forwardEvents(this.refs.dialog, this, Dialog.FIRES)
 
-    console.log(this.get('initialFocus'))
     this.set({ initialFocusElement: this.get('initialFocus') ? this.refs.ok : false })
   },
+
+  methods: {
+    open () {
+      this.refs.dialog.open()
+    },
+    close () {
+      this.refs.dialog.close()
+    }
+  }
 }
 </script>

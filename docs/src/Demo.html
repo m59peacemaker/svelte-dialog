@@ -90,9 +90,7 @@
 {{/if}}
 
 <script>
-import Dialog from '../../src/Dialog.html'
-import Confirm from '../../src/Confirm.html'
-import Alert from '../../src/Alert.html'
+import { Alert, Confirm, alert, confirm } from '../../src'
 
 export default {
   data () {
@@ -110,6 +108,6 @@ export default {
     }
   },
 
-  components: { Dialog, Confirm, Alert }
+  components: { Confirm, Alert }
 }
 </script>
