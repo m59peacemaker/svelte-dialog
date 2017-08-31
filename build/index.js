@@ -1212,6 +1212,14 @@ function createComment$1() {
 	return document.createComment('');
 }
 
+function addListener$1(node, event, handler) {
+	node.addEventListener(event, handler, false);
+}
+
+function removeListener$1(node, event, handler) {
+	node.removeEventListener(event, handler, false);
+}
+
 function setAttribute$1(node, attribute, value) {
 	node.setAttribute(attribute, value);
 }
@@ -1504,7 +1512,7 @@ function create_main_fragment ( state, component ) {
 	};
 }
 
-function Dialog ( options ) {
+function Dialog$1 ( options ) {
 	this.options = options;
 	this.refs = {};
 	this._state = assign$1( template.data(), options.data );
@@ -1551,8 +1559,355 @@ function Dialog ( options ) {
 	}
 }
 
-assign$1( Dialog.prototype, proto$1 );
+assign$1( Dialog$1.prototype, proto$1 );
 
-template.setup( Dialog );
+template.setup( Dialog$1 );
 
-export default Dialog;
+var template$2 = (function () {
+const DEFAULTS = Object.assign({}, Dialog$1.DEFAULTS, {
+  initialFocus: false
+});
+const FIRES = Dialog$1.FIRES;
+Object.freeze(DEFAULTS);
+
+return {
+  setup (Alert) {
+    Object.assign(Alert, { DEFAULTS, FIRES });
+  },
+
+  data () {
+    return Object.assign({}, DEFAULTS)
+  },
+
+  oncreate () {
+    forwardData(this, this.refs.dialog, Dialog$1.DEFAULTS);
+    forwardEvents(this.refs.dialog, this, Dialog$1.FIRES);
+
+    this.set({ initialFocusElement: this.get('initialFocus') ? this.refs.ok : false });
+  },
+
+  methods: {
+    open () {
+      this.refs.dialog.open();
+    },
+    close () {
+      this.refs.dialog.close();
+    }
+  }
+}
+}());
+
+function create_main_fragment$2 ( state, component ) {
+	var div, button, text;
+
+	function click_handler ( event ) {
+		component.close();
+	}
+
+	function mouseenter_handler ( event ) {
+		this.focus();
+	}
+
+	function mouseleave_handler ( event ) {
+		this.blur();
+	}
+
+	var dialog = new Dialog$1({
+		_root: component._root,
+		slots: { default: createFragment(), actions: createFragment() }
+	});
+
+	component.refs.dialog = dialog;
+
+	return {
+		create: function () {
+			div = createElement$1( 'div' );
+			button = createElement$1( 'button' );
+			text = createText$1( state.okText );
+			dialog._fragment.create();
+			this.hydrate();
+		},
+
+		hydrate: function ( nodes ) {
+			setAttribute$1( div, 'slot', "actions" );
+			button.className = "dialog-action ok";
+			addListener$1( button, 'click', click_handler );
+			addListener$1( button, 'mouseenter', mouseenter_handler );
+			addListener$1( button, 'mouseleave', mouseleave_handler );
+		},
+
+		mount: function ( target, anchor ) {
+			appendNode$1( div, dialog._slotted.actions );
+			appendNode$1( button, div );
+			component.refs.ok = button;
+			appendNode$1( text, button );
+			dialog._fragment.mount( target, anchor );
+		},
+
+		update: function ( changed, state ) {
+			if ( changed.okText ) {
+				text.data = state.okText;
+			}
+		},
+
+		unmount: function () {
+			dialog._fragment.unmount();
+		},
+
+		destroy: function () {
+			removeListener$1( button, 'click', click_handler );
+			removeListener$1( button, 'mouseenter', mouseenter_handler );
+			removeListener$1( button, 'mouseleave', mouseleave_handler );
+			if ( component.refs.ok === button ) component.refs.ok = null;
+			dialog.destroy( false );
+			if ( component.refs.dialog === dialog ) component.refs.dialog = null;
+		}
+	};
+}
+
+function Alert ( options ) {
+	this.options = options;
+	this.refs = {};
+	this._state = assign$1( template$2.data(), options.data );
+
+	this._observers = {
+		pre: Object.create( null ),
+		post: Object.create( null )
+	};
+
+	this._handlers = Object.create( null );
+
+	this._root = options._root || this;
+	this._yield = options._yield;
+	this._bind = options._bind;
+
+	var oncreate = template$2.oncreate.bind( this );
+
+	if ( !options._root ) {
+		this._oncreate = [oncreate];
+		this._beforecreate = [];
+		this._aftercreate = [];
+	} else {
+	 	this._root._oncreate.push(oncreate);
+	 }
+
+	this._fragment = create_main_fragment$2( this._state, this );
+
+	if ( options.target ) {
+		this._fragment.create();
+		this._fragment.mount( options.target, options.anchor || null );
+	}
+
+	if ( !options._root ) {
+		this._lock = true;
+		callAll$1(this._beforecreate);
+		callAll$1(this._oncreate);
+		callAll$1(this._aftercreate);
+		this._lock = false;
+	}
+}
+
+assign$1( Alert.prototype, template$2.methods, proto$1 );
+
+template$2.setup( Alert );
+
+var template$3 = (function () {
+const DEFAULTS = Object.assign({}, Dialog$1.DEFAULTS, {
+  heading: 'Are you sure?',
+  description: 'Confirm if you wish to proceed.',
+  denyText: 'Cancel',
+  confirmText: 'Confirm',
+  defaultAction: false
+});
+const ACTIONS = { confirm: 'confirm', deny: 'deny' };
+[ DEFAULTS, ACTIONS ].forEach(Object.freeze);
+
+return {
+  setup (Confirm) {
+    Object.assign(Confirm, { DEFAULTS, ACTIONS });
+  },
+
+  data () {
+    return Object.assign({}, DEFAULTS)
+  },
+
+  oncreate () {
+    forwardData(this, this.refs.dialog, Dialog$1.DEFAULTS);
+    forwardEvents(this.refs.dialog, this, Dialog$1.FIRES);
+
+    this.set({ initialFocusElement: this.refs[this.get('defaultAction')] });
+  },
+
+  methods: {
+    open () {
+      this.refs.dialog.open();
+    },
+    deny () {
+      this.refs.dialog.dismiss({ confirmed: false });
+    },
+    confirm () {
+      this.refs.dialog.close({ confirmed: true });
+    }
+  }
+}
+}());
+
+function create_main_fragment$3 ( state, component ) {
+	var div, button, text, text_1, button_1, text_2;
+
+	function click_handler ( event ) {
+		component.deny();
+	}
+
+	function mouseenter_handler ( event ) {
+		this.focus();
+	}
+
+	function mouseleave_handler ( event ) {
+		this.blur();
+	}
+
+	function click_handler_1 ( event ) {
+		component.confirm();
+	}
+
+	function mouseenter_handler_1 ( event ) {
+		this.focus();
+	}
+
+	function mouseleave_handler_1 ( event ) {
+		this.blur();
+	}
+
+	var dialog = new Dialog$1({
+		_root: component._root,
+		slots: { default: createFragment(), actions: createFragment() }
+	});
+
+	component.refs.dialog = dialog;
+
+	return {
+		create: function () {
+			div = createElement$1( 'div' );
+			button = createElement$1( 'button' );
+			text = createText$1( state.denyText );
+			text_1 = createText$1( "\n    " );
+			button_1 = createElement$1( 'button' );
+			text_2 = createText$1( state.confirmText );
+			dialog._fragment.create();
+			this.hydrate();
+		},
+
+		hydrate: function ( nodes ) {
+			setAttribute$1( div, 'slot', "actions" );
+			button.className = "dialog-action deny";
+			addListener$1( button, 'click', click_handler );
+			addListener$1( button, 'mouseenter', mouseenter_handler );
+			addListener$1( button, 'mouseleave', mouseleave_handler );
+			button_1.className = "dialog-action confirm";
+			addListener$1( button_1, 'click', click_handler_1 );
+			addListener$1( button_1, 'mouseenter', mouseenter_handler_1 );
+			addListener$1( button_1, 'mouseleave', mouseleave_handler_1 );
+		},
+
+		mount: function ( target, anchor ) {
+			appendNode$1( div, dialog._slotted.actions );
+			appendNode$1( button, div );
+			component.refs.deny = button;
+			appendNode$1( text, button );
+			appendNode$1( text_1, div );
+			appendNode$1( button_1, div );
+			component.refs.confirm = button_1;
+			appendNode$1( text_2, button_1 );
+			dialog._fragment.mount( target, anchor );
+		},
+
+		update: function ( changed, state ) {
+			if ( changed.denyText ) {
+				text.data = state.denyText;
+			}
+
+			if ( changed.confirmText ) {
+				text_2.data = state.confirmText;
+			}
+		},
+
+		unmount: function () {
+			dialog._fragment.unmount();
+		},
+
+		destroy: function () {
+			removeListener$1( button, 'click', click_handler );
+			removeListener$1( button, 'mouseenter', mouseenter_handler );
+			removeListener$1( button, 'mouseleave', mouseleave_handler );
+			if ( component.refs.deny === button ) component.refs.deny = null;
+			removeListener$1( button_1, 'click', click_handler_1 );
+			removeListener$1( button_1, 'mouseenter', mouseenter_handler_1 );
+			removeListener$1( button_1, 'mouseleave', mouseleave_handler_1 );
+			if ( component.refs.confirm === button_1 ) component.refs.confirm = null;
+			dialog.destroy( false );
+			if ( component.refs.dialog === dialog ) component.refs.dialog = null;
+		}
+	};
+}
+
+function Confirm ( options ) {
+	this.options = options;
+	this.refs = {};
+	this._state = assign$1( template$3.data(), options.data );
+
+	this._observers = {
+		pre: Object.create( null ),
+		post: Object.create( null )
+	};
+
+	this._handlers = Object.create( null );
+
+	this._root = options._root || this;
+	this._yield = options._yield;
+	this._bind = options._bind;
+
+	var oncreate = template$3.oncreate.bind( this );
+
+	if ( !options._root ) {
+		this._oncreate = [oncreate];
+		this._beforecreate = [];
+		this._aftercreate = [];
+	} else {
+	 	this._root._oncreate.push(oncreate);
+	 }
+
+	this._fragment = create_main_fragment$3( this._state, this );
+
+	if ( options.target ) {
+		this._fragment.create();
+		this._fragment.mount( options.target, options.anchor || null );
+	}
+
+	if ( !options._root ) {
+		this._lock = true;
+		callAll$1(this._beforecreate);
+		callAll$1(this._oncreate);
+		callAll$1(this._aftercreate);
+		this._lock = false;
+	}
+}
+
+assign$1( Confirm.prototype, template$3.methods, proto$1 );
+
+template$3.setup( Confirm );
+
+const unComponent = (DialogComponent) => {
+  function dialog (options) {
+    const dialogComponent = new DialogComponent({ data: options, target: document.body });
+    dialogComponent.on('hidden', () => dialogComponent.destroy());
+    return dialogComponent
+  }
+  return dialog
+};
+
+const alert = unComponent(Alert);
+const confirm = unComponent(Confirm);
+
+export { Alert, alert, Confirm, confirm };
+export default Dialog$1;
