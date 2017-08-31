@@ -12,7 +12,7 @@ const Plugins = () => [
 
 export default [
   {
-    input: 'src/Dialog.html',
+    input: 'src/index.js',
     output: {
       file: 'build/index.js',
       format: 'es'
@@ -21,7 +21,7 @@ export default [
   },
 
   {
-    input: 'src/Dialog.html',
+    input: 'src/index.js',
     output: {
       file: 'build/index.cjs.js',
       format: 'cjs'
