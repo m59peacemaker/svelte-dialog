@@ -38,8 +38,7 @@
   "author": "Johnny Hauser <johnnyhauser@gmail.com>",
   "license": "CC0-1.0",
   "dependencies": {
-    "focus-trap": "^2.3.0",
-    "svelte-modal": "^0.1.0"
+    "svelte-modal": "^0.3.0"
   },
   "devDependencies": {
     "live-server": "^1.2.0",
