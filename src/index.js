@@ -1,12 +1,12 @@
 import Dialog from './Dialog.html'
 import Alert from './Alert.html'
 import Confirm from './Confirm.html'
-import unComponent from './lib/un-component'
+import makeFunctionAPI from './lib/make-function-api'
 
 export default Dialog
 
-const alert = unComponent(Alert)
-const confirm = unComponent(Confirm)
+const alert = makeFunctionAPI(Alert)
+const confirm = makeFunctionAPI(Confirm)
 
 export {
   Alert,
