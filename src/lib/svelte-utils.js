@@ -2,13 +2,13 @@ const toArray = v => Array.isArray(v) ? v : Object.keys(v)
 const makeCancelAll = listeners =>
   () => listeners.forEach(listener => listener.cancel())
 
-const forwardData = (from, to, keys) => {
+const forwardDataFrom = (from, to, keys) => {
   const listeners = toArray(keys)
     .map(key => from.observe(key, value => to.set({ [key]: value }), { init: true }))
   return { cancel: makeCancelAll(listeners) }
 }
 
-const forwardEvents = (from, to, eventNames) => {
+const forwardEventsFrom = (from, to, eventNames) => {
   const listeners = toArray(eventNames)
     .map(eventName => from.on(eventName, event => to.fire(eventName, event)))
   return { cancel: makeCancelAll(listeners)  }
@@ -21,7 +21,7 @@ const addMethodsFrom = (from, to, methodNames) => {
 }
 
 export {
-  forwardData,
-  forwardEvents,
+  forwardDataFrom,
+  forwardEventsFrom,
   addMethodsFrom
 }

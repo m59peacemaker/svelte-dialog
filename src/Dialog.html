@@ -30,7 +30,7 @@
 
 <script>
 import Modal from 'svelte-modal'
-import { forwardData, forwardEvents, addMethodsFrom } from './lib/svelte-utils'
+import { forwardDataFrom, forwardEventsFrom, addMethodsFrom } from './lib/svelte-utils'
 
 let id = -1
 
@@ -65,8 +65,8 @@ export default {
   },
 
   oncreate () {
-    forwardData(this, this.refs.modal, Modal.DEFAULTS)
-    forwardEvents(this.refs.modal, this, Modal.FIRES)
+    forwardDataFrom(this, this.refs.modal, Modal.DEFAULTS)
+    forwardEventsFrom(this.refs.modal, this, Modal.FIRES)
     addMethodsFrom(this.refs.modal, this, [ 'open', 'dismiss', 'close' ])
   }
 }

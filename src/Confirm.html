@@ -19,7 +19,7 @@
 
 <script>
 import Dialog from './Dialog.html'
-import { forwardData, forwardEvents } from './lib/svelte-utils'
+import { forwardDataFrom, forwardEventsFrom } from './lib/svelte-utils'
 
 const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
   heading: 'Are you sure?',
@@ -44,8 +44,8 @@ export default {
   },
 
   oncreate () {
-    forwardData(this, this.refs.dialog, Dialog.DEFAULTS)
-    forwardEvents(this.refs.dialog, this, Dialog.FIRES)
+    forwardDataFrom(this, this.refs.dialog, Dialog.DEFAULTS)
+    forwardEventsFrom(this.refs.dialog, this, Dialog.FIRES)
 
     this.set({ initialFocusElement: this.refs[this.get('defaultAction')] })
   },
