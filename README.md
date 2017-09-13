@@ -13,21 +13,9 @@ $ npm install svelte-dialog
 ## example
 
 ```js
-import { Confirm, Alert, Prompt } from 'svelte-dialog'
+import { Confirm, Alert, confirm, alert } from 'svelte-dialog'
 
-const dialog = Confirm({ some, options }) // I will make less jankety docs later, sorry friend
-
-dialog.on('closed', result => {
-  result // result that was passed to `dialog.close`
-})
-
-dialog.on('dismissed', result => {
-  result // result that was passed to `dialog.dismissed`
-})
-
-dialog.open()
-
-dialog.close('foo')
-// or
-dialog.dismiss('bar')
+// Out of time for good docs, just see the source code, demo, and demo code.
 ```
+
+## I will make less jankety docs later, sorry friend
