@@ -1415,6 +1415,20 @@ const addMethodsFrom = (from, to, methodNames) => {
   );
 };
 
+const enableDataDefaults = (component, defaults) => {
+  const observers = Object
+    .keys(defaults)
+    .map(key => {
+      const defaultValue = defaults[key];
+      return component.observe(key, newValue => {
+        if (newValue === undefined) {
+          component.set({ [key]: defaultValue });
+        }
+      })
+    });
+  return makeCancelAll(observers)
+};
+
 function noop$1$1() {}
 
 function assign$1$1(target) {
@@ -1638,13 +1652,13 @@ return {
 }());
 
 function encapsulateStyles ( node ) {
-	setAttribute$1$1( node, 'svelte-1436264266', '' );
+	setAttribute$1$1( node, 'svelte-3205078544', '' );
 }
 
 function add_css () {
 	var style = createElement$1$1( 'style' );
-	style.id = 'svelte-1436264266-style';
-	style.textContent = ".svelte-dialog[svelte-1436264266]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87)}.svelte-dialog[svelte-1436264266]:focus{outline:0}.dialog-container[svelte-1436264266]{min-width:275px;max-width:440px}@media(min-width: 768px){.dialog-container[svelte-1436264266]{min-width:360px;max-width:600px}}.dialog-main[svelte-1436264266]{padding:24px}.dialog-heading[svelte-1436264266]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-1436264266]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-1436264266]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
+	style.id = 'svelte-3205078544-style';
+	style.textContent = ".svelte-dialog[svelte-3205078544]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87);max-height:100vh;overflow-y:auto}.svelte-dialog[svelte-3205078544]:focus{outline:0}.dialog-container[svelte-3205078544]{min-width:275px;max-width:400px}@media(min-width: 960px){.dialog-container[svelte-3205078544]{min-width:360px;max-width:440px}}.dialog-main[svelte-3205078544]{padding:24px}.dialog-heading[svelte-3205078544]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-3205078544]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-3205078544]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
 	appendNode$1$1( style, document.head );
 }
 
@@ -1777,7 +1791,7 @@ function Dialog$1 ( options ) {
 	this._bind = options._bind;
 	this._slotted = options.slots || {};
 
-	if ( !document.getElementById( 'svelte-1436264266-style' ) ) add_css();
+	if ( !document.getElementById( 'svelte-3205078544-style' ) ) add_css();
 
 	var oncreate = template.oncreate.bind( this );
 
@@ -1830,6 +1844,7 @@ return {
   oncreate () {
     forwardDataFrom(this, this.refs.dialog, Dialog$1.DEFAULTS);
     forwardEventsFrom(this.refs.dialog, this, Dialog$1.FIRES);
+    enableDataDefaults(this, DEFAULTS);
 
     this.set({ initialFocusElement: this.get('initialFocus') ? this.refs.ok : false });
   },
@@ -1982,6 +1997,7 @@ return {
   oncreate () {
     forwardDataFrom(this, this.refs.dialog, Dialog$1.DEFAULTS);
     forwardEventsFrom(this.refs.dialog, this, Dialog$1.FIRES);
+    enableDataDefaults(this, DEFAULTS);
 
     this.set({ initialFocusElement: this.refs[this.get('defaultAction')] });
   },
@@ -2145,17 +2161,20 @@ assign$1$1( Confirm.prototype, template$3.methods, proto$1$1 );
 
 template$3.setup( Confirm );
 
-const unComponent = (DialogComponent) => {
+const makeFunctionAPI = (DialogComponent) => {
   function dialog (options) {
     const dialogComponent = new DialogComponent({ data: options, target: document.body });
     dialogComponent.on('hidden', () => dialogComponent.destroy());
-    return dialogComponent
+    return Object.assign(
+      new Promise(resolve => dialogComponent.on('result', resolve)),
+      { dialog: dialogComponent }
+    )
   }
-  return dialog
+  return Object.assign(dialog, DialogComponent)
 };
 
-const alert = unComponent(Alert);
-const confirm = unComponent(Confirm);
+const alert = makeFunctionAPI(Alert);
+const confirm = makeFunctionAPI(Confirm);
 
 exports['default'] = Dialog$1;
 exports.Alert = Alert;
