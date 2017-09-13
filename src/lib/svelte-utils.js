@@ -20,8 +20,23 @@ const addMethodsFrom = (from, to, methodNames) => {
   )
 }
 
+const enableDataDefaults = (component, defaults) => {
+  const observers = Object
+    .keys(defaults)
+    .map(key => {
+      const defaultValue = defaults[key]
+      return component.observe(key, newValue => {
+        if (newValue === undefined) {
+          component.set({ [key]: defaultValue })
+        }
+      })
+    })
+  return makeCancelAll(observers)
+}
+
 export {
   forwardDataFrom,
   forwardEventsFrom,
-  addMethodsFrom
+  addMethodsFrom,
+  enableDataDefaults
 }

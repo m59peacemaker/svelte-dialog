@@ -12,7 +12,7 @@
 
 <script>
 import Dialog from './Dialog.html'
-import { forwardDataFrom, forwardEventsFrom } from './lib/svelte-utils'
+import { forwardDataFrom, forwardEventsFrom, enableDataDefaults } from './lib/svelte-utils'
 
 const DEFAULTS = Object.assign({}, Dialog.DEFAULTS, {
   initialFocus: false
@@ -34,6 +34,7 @@ export default {
   oncreate () {
     forwardDataFrom(this, this.refs.dialog, Dialog.DEFAULTS)
     forwardEventsFrom(this.refs.dialog, this, Dialog.FIRES)
+    enableDataDefaults(this, DEFAULTS)
 
     this.set({ initialFocusElement: this.get('initialFocus') ? this.refs.ok : false })
   },
