@@ -1616,11 +1616,7 @@ const DEFAULTS = Object.assign({}, Modal.DEFAULTS, {
   center: true,
   heading: `${location.host} says...`,
   description: 'Press "OK" to continue.',
-  okText: 'OK',
-  ids: {
-    heading: `svelte-dialog-heading-${id}`,
-    description: `svelte-dialog-description-${id}`
-  }
+  okText: 'OK'
 });
 const FIRES = Object.assign({}, Modal.FIRES, {
   dismiss: 'dismiss',
@@ -1636,7 +1632,12 @@ return {
   data () {
     ++id;
 
-    return Object.assign({}, DEFAULTS)
+    return Object.assign({}, DEFAULTS, {
+      ids: {
+        heading: `svelte-dialog-heading-${id}`,
+        description: `svelte-dialog-description-${id}`
+      }
+    })
   },
 
   oncreate () {
@@ -1648,13 +1649,13 @@ return {
 }());
 
 function encapsulateStyles ( node ) {
-	setAttribute$1$1( node, 'svelte-3205078544', '' );
+	setAttribute$1$1( node, 'svelte-9343704', '' );
 }
 
 function add_css () {
 	var style = createElement$1$1( 'style' );
-	style.id = 'svelte-3205078544-style';
-	style.textContent = ".svelte-dialog[svelte-3205078544]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87);max-height:100vh;overflow-y:auto}.svelte-dialog[svelte-3205078544]:focus{outline:0}.dialog-container[svelte-3205078544]{min-width:275px;max-width:400px}@media(min-width: 960px){.dialog-container[svelte-3205078544]{min-width:360px;max-width:440px}}.dialog-main[svelte-3205078544]{padding:24px}.dialog-heading[svelte-3205078544]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-3205078544]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-3205078544]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
+	style.id = 'svelte-9343704-style';
+	style.textContent = ".svelte-dialog[svelte-9343704]{max-width:calc(100vw - 20px);background-color:white;box-shadow:0 7px 8px -4px rgba(0,0,0,.2), 0 13px 19px 2px rgba(0,0,0,.14), 0 5px 24px 4px rgba(0,0,0,.12);border-radius:4px;color:rgba(0,0,0,0.87);max-height:100vh;overflow-y:auto}.svelte-dialog[svelte-9343704]:focus{outline:0}.dialog-container[svelte-9343704]{min-width:275px;max-width:400px}@media(min-width: 960px){.dialog-container[svelte-9343704]{min-width:360px;max-width:440px}}.dialog-main[svelte-9343704]{padding:24px}.dialog-heading[svelte-9343704]{font-size:20px;font-weight:500;margin:0 0 10px 0}.dialog-description[svelte-9343704]{margin:12px 0 24px 0;font-size:16px;line-height:1.6}.dialog-actions[svelte-9343704]{display:flex;justify-content:flex-end;margin:0 24px 0 48px}.dialog-action{font:inherit;font-size:14px;font-weight:500;color:rgb(16,108,200);text-transform:uppercase;border:0;background:none;padding:10px;margin:8px 0 8px 8px;box-sizing:border-box;min-width:93px;cursor:pointer;transition:background-color 400ms cubic-bezier(.25, .8, .25, 1)}.dialog-action:focus{outline:none}.dialog-action:focus,.dialog-action.emphasized{background-color:rgba(158,158,158,0.2)}";
 	appendNode$1$1( style, document.head );
 }
 
@@ -1787,7 +1788,7 @@ function Dialog$1 ( options ) {
 	this._bind = options._bind;
 	this._slotted = options.slots || {};
 
-	if ( !document.getElementById( 'svelte-3205078544-style' ) ) add_css();
+	if ( !document.getElementById( 'svelte-9343704-style' ) ) add_css();
 
 	var oncreate = template.oncreate.bind( this );
 
