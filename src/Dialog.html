@@ -38,11 +38,7 @@ const DEFAULTS = Object.assign({}, Modal.DEFAULTS, {
   center: true,
   heading: `${location.host} says...`,
   description: 'Press "OK" to continue.',
-  okText: 'OK',
-  ids: {
-    heading: `svelte-dialog-heading-${id}`,
-    description: `svelte-dialog-description-${id}`
-  }
+  okText: 'OK'
 })
 const FIRES = Object.assign({}, Modal.FIRES, {
   dismiss: 'dismiss',
@@ -61,7 +57,12 @@ export default {
   data () {
     ++id
 
-    return Object.assign({}, DEFAULTS)
+    return Object.assign({}, DEFAULTS, {
+      ids: {
+        heading: `svelte-dialog-heading-${id}`,
+        description: `svelte-dialog-description-${id}`
+      }
+    })
   },
 
   oncreate () {
